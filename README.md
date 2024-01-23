@@ -21,7 +21,7 @@ Tools used:
 
 ## Chapter 01. Introduction to Message Brokers and Kafka
 
-### Message Brokers
+### Message Brokers - Overview
 
 > A message broker (also known as an integration broker or interface engine) is an intermediary computer program module
 > that translates a message from the formal messaging protocol of the sender to the formal messaging protocol of the
@@ -58,7 +58,7 @@ Message brokers are generally based on one of two fundamental architectures:
 
 Additionally, a more scalable multi-hub approach can be used to integrate multiple brokers.
 
-### Kafka
+### Kafka - Overview
 
 > Apache Kafka is a distributed event store and stream-processing platform.
 
@@ -75,5 +75,59 @@ naturally **groups** messages together to reduce the overhead of the network rou
 This leads to larger network packets, larger sequential disk operations, contiguous memory blocks which allow Kafka to
 turn a stream bursts of random messages writes into linear writes.
 
+Apache Kafka is based on the **commit log**, and it allows users to subscribe to it and publish data to any number of
+systems or real-time applications.
+
+A **commit** is the making of a set of tentative changes **permanent**, marking the end of a **transaction** and
+providing **Durability** to **ACID** transactions. The **record** of commits is called the **commit log**.
+
 ![KafkaOverview](KafkaOverview.PNG)
+
+Kafka stores **key-value** messages that come from arbitrarily many processes called **producers**.
+
+The data can be partitioned into different **"partitions"** within different **"topics"**.
+
+Within a **partition**, messages are strictly ordered by their **offsets** (the position of a message within a
+partition), and indexed and stored together with a timestamp.
+
+Other processes called **"consumers"** can read messages from partitions.
+
+For **stream processing**, Kafka offers the **Streams API** that allows writing Java applications that consume data from
+Kafka and write results back to Kafka.
+
+Kafka runs on a **cluster** of one or more **servers** (called **brokers**), and the partitions of all topics are
+distributed across the cluster nodes.
+
+Additionally, partitions are **replicated** to multiple brokers. This architecture allows Kafka to deliver massive
+streams of messages in a **fault-tolerant** fashion and has allowed it to replace some of the conventional messaging
+systems like Java Message Service (JMS), Advanced Message Queuing Protocol (AMQP), etc.
+
+Kafka offers **transactional writes**, which provide **exactly-once** stream processing using the Streams API.
+
+Kafka supports two types of topics: **Regular** and **compacted**.
+
+**Regular topics** can be configured with a **retention time** or a **space bound**. If there are records that are older
+than the specified retention time or if the space bound is exceeded for a partition, Kafka is allowed to **delete** old
+data to free storage space.
+
+By default, topics are configured with a retention time of **7 days**, but it's also possible to store data
+indefinitely.
+
+For **compacted topics**, records don't expire based on time or space bounds. Instead, Kafka treats later messages as
+updates to earlier messages with the same key and guarantees never to delete the latest message per key.
+
+Users can delete messages entirely by writing a so-called **tombstone message** with **null-value** for a specific key.
+
+There are five major APIs in Kafka:
+
+- **Producer API** – Permits an application to publish streams of records.
+- **Consumer API** – Permits an application to subscribe to topics and processes streams of records.
+- **Connect API** – Executes the reusable producer and consumer APIs that can link the topics to the existing
+  applications.
+- **Streams API** – This API converts the input streams to output and produces the result.
+- **Admin API** – Used to manage Kafka topics, brokers, and other Kafka objects.
+
+The consumer and producer APIs are decoupled from the core functionality of Kafka through an underlying messaging
+protocol. This allows writing compatible API layers in any programming language that are as efficient as the Java APIs
+bundled with Kafka. The Apache Kafka project maintains a list of such third party APIs.
 
