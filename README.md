@@ -12,7 +12,7 @@ Tools used:
 ## Table of contents
 
 1. [Introduction to Message Brokers and Kafka](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-01-introduction-to-message-brokers-and-kafka)
-2. Building a Kafka Cluster
+2. [Kafka Installation and Cluster setup](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-02-kafka-installation-and-cluster-setup)
 3. Kafka Producer
 4. Kafka Consumer
 5. Banking System Demo
@@ -62,6 +62,8 @@ Additionally, a more scalable multi-hub approach can be used to integrate multip
 
 > Apache Kafka is a distributed event store and stream-processing platform.
 
+![KafkaOverview](KafkaOverview.PNG)
+
 It is an open-source system developed by the Apache Software Foundation written in Java and Scala.
 
 The project aims to provide a unified, high-throughput, low-latency platform for handling real-time data feeds.
@@ -81,16 +83,22 @@ systems or real-time applications.
 A **commit** is the making of a set of tentative changes **permanent**, marking the end of a **transaction** and
 providing **Durability** to **ACID** transactions. The **record** of commits is called the **commit log**.
 
-![KafkaOverview](KafkaOverview.PNG)
+![KafkaArchitecture](KafkaArchitecture.PNG)
 
 Kafka stores **key-value** messages that come from arbitrarily many processes called **producers**.
+
+![PublisherRecord](PublisherRecord.PNG)
 
 The data can be partitioned into different **"partitions"** within different **"topics"**.
 
 Within a **partition**, messages are strictly ordered by their **offsets** (the position of a message within a
 partition), and indexed and stored together with a timestamp.
 
+![KafkaProducer](KafkaProducer.PNG)
+
 Other processes called **"consumers"** can read messages from partitions.
+
+![Consumers](Consumers.PNG)
 
 For **stream processing**, Kafka offers the **Streams API** that allows writing Java applications that consume data from
 Kafka and write results back to Kafka.
@@ -130,4 +138,47 @@ There are five major APIs in Kafka:
 The consumer and producer APIs are decoupled from the core functionality of Kafka through an underlying messaging
 protocol. This allows writing compatible API layers in any programming language that are as efficient as the Java APIs
 bundled with Kafka. The Apache Kafka project maintains a list of such third party APIs.
+
+**Key points**
+
+- Apache Kafka is a highly scalable and high performance streaming messaging system
+- **Producer Record**: **Key**, **Value** (our message payload), **Metadata** (**Timestamp**/**Topic**/**Partition**)
+- **Kafka Topic**: Category of events/messages that consists of **Partitions**
+- **Partitions**
+    - each partition is an ordered queue
+    - each record in a partition has an offset number
+    - the **number** of partitions in a topic is directly proportional to the maximum unit of parallelism for a
+      Kafka **Topic**
+    - we can estimate the right number of partitions for a topic given expected our peak message rate/volume
+    - by adding more message **brokers**, we can increase the Kafka topics capacity, transparently to the publishers
+    - thus, we can have many broker instances working in parallel to handle incoming messages
+    - and, we can have many consumers consuming in parallel from the same topic
+- **Single Consumer Group**
+    - messages from a topic are load balanced among consumers within a single **consumer group**
+    - it's like a **distributed queue**
+- Consumers in different **Consumer Groups**
+    - messages from a topic are broadcast to all consumer groups
+    - it's like a **Publish/Subscribe** system
+- **Fault tolerance**
+    - each Kafka **topic** is configured with a **replication factor**
+    - a replication factor of **N** means each **partition** is replicated to **N** Kafka **brokers**
+    - for each **partition**, only one broker acts as a partition **leader**, while other brokers are partition
+      **followers**
+    - the **leader** takes all the reads and writes
+    - the **followers** replicate the partition data to stay in sync with the **leader**
+- **Zookeeper**
+    - Kafka is using Zookeeper for all its coordination logic
+    - Kafka is using Zookeeper as a registry for **brokers** as well as for monitoring and failure detection
+      (ephemeral znodes, watchers, etc.)
+- **Data Persistence**
+    - Kafka persists all its messages to disk
+    - Even after messages are consumed by the consumers, the records still stay within Kafka for the configurable
+      period of time
+    - This allows new consumers to join and consume older messages
+    - Consumers that failed in the process of reading/processing a message can retry
+    - Failed brokers can recover very fast
+
+---
+
+## Chapter 02. Kafka Installation and Cluster setup
 
