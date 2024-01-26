@@ -182,3 +182,76 @@ bundled with Kafka. The Apache Kafka project maintains a list of such third part
 
 ## Chapter 02. Kafka Installation and Cluster setup
 
+We will cover only the installation on Windows.
+
+**Install WSL2**
+
+- Open Powershell in administrative mode
+- Type this command: `wsl --install`
+- Restart the system
+- After restart, `Ubuntu` app will be installed
+- Set up Linux username and password
+- Disable IPv6 on WSL2
+
+```
+sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
+sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
+```
+
+**Install Java JDK version 11**
+
+- Run these three commands one by one:
+
+```
+wget -O- https://apt.corretto.aws/corretto.key | sudo apt-key add - 
+sudo add-apt-repository 'deb https://apt.corretto.aws stable main'
+sudo apt-get update; sudo apt-get install -y java-11-amazon-corretto-jdk
+```
+
+- Verify by running command: `java -version`
+
+**Install Apache Kafka**
+
+- Download the latest Apache Kafka:
+
+```
+wget https://downloads.apache.org/kafka/3.6.1/kafka_2.13-3.6.1.tgz
+```
+
+- Extract the file:
+
+```
+tar -zxvf kafka_2.13-3.6.1.tgz
+rm -f kafka_2.13-3.6.1.tgz
+```
+
+- Set the PATH variable:
+
+```
+vi ~/.bashrc
+
+# append this line at the end and save
+PATH="$PATH:/home/risrivas/kafka_2.13-3.6.1/bin" 
+```
+
+**Start Zookeeper**
+
+- Start Zookeeper by running this command
+
+```
+~/kafka_2.13-3.6.1/bin/zookeeper-server-start.sh ~/kafka_2.13-3.6.1/config/zookeeper.properties
+```
+
+**Start Kafka**
+
+- Start Kafka by running this command
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-server-start.sh ~/kafka_2.13-3.6.1/config/server.properties
+```
+
+- **Stop** Kafka: `~/kafka_2.13-3.6.1/bin/kafka-server-stop.sh`
+- **Stop** Zookeeper: `~/kafka_2.13-3.6.1/bin/zookeeper-server-stop.sh`
+
+---
+
