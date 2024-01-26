@@ -12,8 +12,16 @@ Tools used:
 ## Table of contents
 
 1. [Introduction to Message Brokers and Kafka](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-01-introduction-to-message-brokers-and-kafka)
+    - [Message Brokers - Overview](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#message-brokers-overview)
+    - [Kafka - Overview](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#kafka-overview)
+    - [Kafka - Key Points](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#kafka-key-points)
 2. [Kafka Installation and Cluster setup](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-02-kafka-installation-and-cluster-setup)
-3. Kafka Producer
+    - [Install WSL2](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
+    - [Install Java JDK version 11](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
+    - [Install Apache Kafka](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
+    - [Verify Installation](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
+    - [Demo run using command line](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
+3. [Kafka Producer](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-03-kafka-producer)
 4. Kafka Consumer
 5. Banking System Demo
 
@@ -139,7 +147,7 @@ The consumer and producer APIs are decoupled from the core functionality of Kafk
 protocol. This allows writing compatible API layers in any programming language that are as efficient as the Java APIs
 bundled with Kafka. The Apache Kafka project maintains a list of such third party APIs.
 
-**Key points**
+### Kafka - Key Points
 
 - Apache Kafka is a highly scalable and high performance streaming messaging system
 - **Producer Record**: **Key**, **Value** (our message payload), **Metadata** (**Timestamp**/**Topic**/**Partition**)
@@ -184,7 +192,7 @@ bundled with Kafka. The Apache Kafka project maintains a list of such third part
 
 We will cover only the installation on Windows.
 
-**Install WSL2**
+### Install WSL2
 
 - Open Powershell in administrative mode
 - Type this command: `wsl --install`
@@ -198,7 +206,7 @@ sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
 sudo sysctl -w net.ipv6.conf.default.disable_ipv6=1
 ```
 
-**Install Java JDK version 11**
+### Install Java JDK version 11
 
 - Run these three commands one by one:
 
@@ -210,7 +218,7 @@ sudo apt-get update; sudo apt-get install -y java-11-amazon-corretto-jdk
 
 - Verify by running command: `java -version`
 
-**Install Apache Kafka**
+### Install Apache Kafka
 
 - Download the latest Apache Kafka:
 
@@ -234,6 +242,8 @@ vi ~/.bashrc
 PATH="$PATH:/home/risrivas/kafka_2.13-3.6.1/bin" 
 ```
 
+### Verify Installation
+
 **Start Zookeeper**
 
 - Start Zookeeper by running this command
@@ -250,8 +260,161 @@ PATH="$PATH:/home/risrivas/kafka_2.13-3.6.1/bin"
 ~/kafka_2.13-3.6.1/bin/kafka-server-start.sh ~/kafka_2.13-3.6.1/config/server.properties
 ```
 
-- **Stop** Kafka: `~/kafka_2.13-3.6.1/bin/kafka-server-stop.sh`
-- **Stop** Zookeeper: `~/kafka_2.13-3.6.1/bin/zookeeper-server-stop.sh`
+- **Stop Kafka**: `~/kafka_2.13-3.6.1/bin/kafka-server-stop.sh`
+- **Stop Zookeeper**: `~/kafka_2.13-3.6.1/bin/zookeeper-server-stop.sh`
+
+### Demo run using command line
+
+**_Single Producer, Single Consumer, Single Broker and Partition_**
+
+- Start Zookeeper in one terminal:
+
+```
+~/kafka_2.13-3.6.1/bin/zookeeper-server-start.sh ~/kafka_2.13-3.6.1/config/zookeeper.properties
+```
+
+- Start Kafka in another terminal:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-server-start.sh ~/kafka_2.13-3.6.1/config/server.properties
+```
+
+- Create a new topic in the third terminal:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic chat
+```
+
+List the topic:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+```
+
+- Start the fourth terminal for producer and publish a few messages:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic chat
+>hello students 1 
+>hello students 2 
+```
+
+- Start the fifth terminal for consumer and consume messages:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic chat --from-beginning
+hello students 1 
+hello students 2 
+```
+
+Publishing a new message in producer prompt will immediately be consumed by the consumer.
+
+Even if we restart the consumer, it will read all the messages in the same **order** as they were published.
+
+**_Running Kafka with multiple brokers and partitions_**
+
+- Create a copy of `~/kafka_2.13-3.6.1/config/server.properties` and name it as `server-1.properties`
+
+```
+cd ~/kafka_2.13-3.6.1/config
+cp server.properties server-1.properties
+```
+
+- Change the following keys in `server-1.properties`:
+
+```
+broker.id=1
+
+listeners=PLAINTEXT://:9093
+
+log.dirs=/tmp/kafka-logs-1
+```
+
+- Do the same steps as above and create another properties file: `server-2.properties`
+
+- Change the following keys in `server-2.properties`:
+
+```
+broker.id=2
+
+listeners=PLAINTEXT://:9094
+
+log.dirs=/tmp/kafka-logs-2
+``` 
+
+- Start new Kafka brokers in two more terminals:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-server-start.sh ~/kafka_2.13-3.6.1/config/server-1.properties
+```
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-server-start.sh ~/kafka_2.13-3.6.1/config/server-2.properties
+```
+
+- Create a new topic with three partitions and three replication factors:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 3 --partitions 3 --topic purchases
+```
+
+List the topics:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+```
+
+We can also describe a topic:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-topics.sh --describe --bootstrap-server localhost:9092 --topic purchases
+```
+
+- Lets produce some messages:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic purchases
+>purchase 1 
+>purchase 2 
+>purchase 3 
+>purchase 4 
+```
+
+- Lets consume messages:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic purchases --from-beginning
+purchase 1 
+purchase 2 
+purchase 3 
+purchase 4 
+```
+
+Please note that ordering may **NOT** be guaranteed if the messages are sent to different partitions.
+
+**_Fault tolerance_**
+
+- Let's shut down one of the Kafka brokers, say the one running with `server-1.properties`
+
+This will be shown when we describe the topic
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-topics.sh --describe --bootstrap-server localhost:9092 --topic purchases
+```
+
+- Lets produce more messages:
+
+```
+>purchase 5
+>purchase 6
+>purchase 7
+```
+
+It will all be consumed by consumer.
+
+Restarting consumer will again consume all the messages even if the producer is shut down. No message is lost.
 
 ---
+
+## Chapter 03. Kafka Producer
 
