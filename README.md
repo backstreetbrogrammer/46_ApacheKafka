@@ -12,15 +12,15 @@ Tools used:
 ## Table of contents
 
 1. [Introduction to Message Brokers and Kafka](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-01-introduction-to-message-brokers-and-kafka)
-    - [Message Brokers - Overview](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#message-brokers-overview)
-    - [Kafka - Overview](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#kafka-overview)
-    - [Kafka - Key Points](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#kafka-key-points)
+    - [Message Brokers - Overview](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#message-brokers---overview)
+    - [Kafka - Overview](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#kafka---overview)
+    - [Kafka - Key Points](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#kafka---key-points)
 2. [Kafka Installation and Cluster setup](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-02-kafka-installation-and-cluster-setup)
     - [Install WSL2](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
-    - [Install Java JDK version 11](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
-    - [Install Apache Kafka](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
-    - [Verify Installation](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
-    - [Demo run using command line](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-wsl2)
+    - [Install Java JDK version 11](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-java-jdk-version-11)
+    - [Install Apache Kafka](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#install-apache-kafka)
+    - [Verify Installation](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#verify-installation)
+    - [Demo run using command line](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#demo-run-using-command-line)
 3. [Kafka Producer](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-03-kafka-producer)
 4. Kafka Consumer
 5. Banking System Demo
