@@ -23,7 +23,6 @@ Tools used:
     - [Demo run using command line](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#demo-run-using-command-line)
 3. [Kafka Producer](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-03-kafka-producer)
 4. [Kafka Consumer](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-04-kafka-consumer)
-5. Banking System Demo
 
 ---
 
@@ -654,9 +653,17 @@ public class KafkaConsumerDemo {
 
 - Open the WSL Ubuntu app and run the program:
 
+- Produce some messages:
+
 ```
 cd /mnt/c/Users/~/ApacheKafka
 
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.producer.KafkaProducerDemo -1
+```
+
+- Consume the messages:
+
+```
 java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.consumer.KafkaConsumerDemo
 ```
 
@@ -675,4 +682,45 @@ Received record (key: 7, value: event 7, partition: 2, offset: 4
 Received record (key: 8, value: event 8, partition: 1, offset: 17
 Received record (key: 9, value: event 9, partition: 2, offset: 5
 ```
+
+**_Multiple consumers within the same consumer group_**
+
+- Run three consumers in three terminals for the same consumer group
+
+```
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.consumer.KafkaConsumerDemo
+```
+
+- Produce some messages:
+
+```
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.producer.KafkaProducerDemo -1
+```
+
+We will observe that each of the three consumers will consume the message based on the partitions on which the
+message is published.
+
+**_Publish / Subscribe consumer groups_**
+
+- Run three consumers in three terminals but each for a different consumer group
+
+```
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.consumer.KafkaConsumerDemo group1
+```
+
+```
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.consumer.KafkaConsumerDemo group2
+```
+
+```
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.consumer.KafkaConsumerDemo group3
+```
+
+- Produce some messages:
+
+```
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.producer.KafkaProducerDemo -1
+```
+
+We will observe that each of the published messages is broadcast to all the three consumers.
 
