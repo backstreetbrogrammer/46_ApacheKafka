@@ -4,7 +4,7 @@
 
 Tools used:
 
-- JDK 8
+- JDK 11
 - Maven
 - JUnit 5, Mockito
 - IntelliJ IDE
@@ -22,7 +22,7 @@ Tools used:
     - [Verify Installation](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#verify-installation)
     - [Demo run using command line](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#demo-run-using-command-line)
 3. [Kafka Producer](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-03-kafka-producer)
-4. Kafka Consumer
+4. [Kafka Consumer](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-04-kafka-consumer)
 5. Banking System Demo
 
 ---
@@ -417,4 +417,262 @@ Restarting consumer will again consume all the messages even if the producer is 
 ---
 
 ## Chapter 03. Kafka Producer
+
+- Start Zookeeper:
+
+```
+~/kafka_2.13-3.6.1/bin/zookeeper-server-start.sh ~/kafka_2.13-3.6.1/config/zookeeper.properties
+```
+
+- Start three Kafka brokers in three terminals:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-server-start.sh ~/kafka_2.13-3.6.1/config/server.properties
+```
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-server-start.sh ~/kafka_2.13-3.6.1/config/server-1.properties
+```
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-server-start.sh ~/kafka_2.13-3.6.1/config/server-2.properties
+```
+
+- Create a new topic with three partitions and replication factor of two:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 2 --partitions 3 --topic events
+```
+
+Describe the topic:
+
+```
+~/kafka_2.13-3.6.1/bin/kafka-topics.sh --describe --bootstrap-server localhost:9092 --topic events
+```
+
+- Create the Kafka Producer class in IntelliJ
+
+```java
+package com.backstreetbrogrammer.producer;
+
+import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+
+import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+
+public class KafkaProducerDemo {
+    private static final String TOPIC = "events";
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092,localhost:9093,localhost:9094";
+
+    public static void main(final String[] args) {
+        final Producer<Long, String> kafkaProducer = createKafkaProducer(BOOTSTRAP_SERVERS);
+        try {
+            final int partition = Integer.parseInt(args[0]);
+            produceMessages(10, kafkaProducer, partition);
+        } catch (final ExecutionException | InterruptedException | NumberFormatException e) {
+            System.err.println(e.getMessage());
+        } finally {
+            kafkaProducer.flush();
+            kafkaProducer.close();
+        }
+    }
+
+    public static void produceMessages(final int numberOfMessages, final Producer<Long, String> kafkaProducer,
+                                       final int partition)
+            throws ExecutionException, InterruptedException {
+        for (int i = 0; i < numberOfMessages; i++) {
+            final String value = String.format("event %d", i);
+            final long timeStamp = System.currentTimeMillis();
+            final ProducerRecord<Long, String> record = new ProducerRecord<>(TOPIC, partition, timeStamp,
+                                                                             (long) i, value);
+            final RecordMetadata recordMetadata = kafkaProducer.send(record).get();
+
+            System.out.printf("Record with (key: %s, value: %s), was sent to (partition: %d, offset: %d%n",
+                              record.key(), record.value(), recordMetadata.partition(), recordMetadata.offset());
+        }
+    }
+
+    public static Producer<Long, String> createKafkaProducer(final String bootstrapServers) {
+        final Properties properties = new Properties();
+
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, "events-producer");
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class.getName());
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+
+        return new KafkaProducer<>(properties);
+    }
+
+}
+```
+
+- Build the project using: `mvn clean install`
+
+- Open the WSL Ubuntu app and run the program:
+
+```
+cd /mnt/c/Users/~/ApacheKafka
+
+# run with partition = 0 (args[0]) 
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.producer.KafkaProducerDemo 0
+```
+
+- Sample output:
+
+```
+[kafka-producer-network-thread | events-producer] INFO org.apache.kafka.clients.producer.internals.TransactionManager - [Producer clientId=events-producer] ProducerId set to 2000 with epoch 0
+Record with (key: 0, value: event 0), was sent to (partition: 0, offset: 0
+Record with (key: 1, value: event 1), was sent to (partition: 0, offset: 1
+Record with (key: 2, value: event 2), was sent to (partition: 0, offset: 2
+Record with (key: 3, value: event 3), was sent to (partition: 0, offset: 3
+Record with (key: 4, value: event 4), was sent to (partition: 0, offset: 4
+Record with (key: 5, value: event 5), was sent to (partition: 0, offset: 5
+Record with (key: 6, value: event 6), was sent to (partition: 0, offset: 6
+Record with (key: 7, value: event 7), was sent to (partition: 0, offset: 7
+Record with (key: 8, value: event 8), was sent to (partition: 0, offset: 8
+Record with (key: 9, value: event 9), was sent to (partition: 0, offset: 9
+```
+
+- Similarly running with `args[0] = 1` for partition 1:
+
+```
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.producer.KafkaProducerDemo 1
+```
+
+- Sample output:
+
+```
+[kafka-producer-network-thread | events-producer] INFO org.apache.kafka.clients.producer.internals.TransactionManager - [Producer clientId=events-producer] ProducerId set to 3000 with epoch 0
+Record with (key: 0, value: event 0), was sent to (partition: 1, offset: 0
+Record with (key: 1, value: event 1), was sent to (partition: 1, offset: 1
+Record with (key: 2, value: event 2), was sent to (partition: 1, offset: 2
+Record with (key: 3, value: event 3), was sent to (partition: 1, offset: 3
+Record with (key: 4, value: event 4), was sent to (partition: 1, offset: 4
+Record with (key: 5, value: event 5), was sent to (partition: 1, offset: 5
+Record with (key: 6, value: event 6), was sent to (partition: 1, offset: 6
+Record with (key: 7, value: event 7), was sent to (partition: 1, offset: 7
+Record with (key: 8, value: event 8), was sent to (partition: 1, offset: 8
+Record with (key: 9, value: event 9), was sent to (partition: 1, offset: 9
+```
+
+- If we do not want to choose partition explicitly and let Kafka use hash of the key to determine partitions, we can
+  pass `args[0] = -1`:
+
+```
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.producer.KafkaProducerDemo -1
+```
+
+- Sample output:
+
+```
+[kafka-producer-network-thread | events-producer] INFO org.apache.kafka.clients.producer.internals.TransactionManager - [Producer clientId=events-producer] ProducerId set to 3001 with epoch 0
+Record with (key: 0, value: event 0), was sent to (partition: 2, offset: 0
+Record with (key: 1, value: event 1), was sent to (partition: 0, offset: 10
+Record with (key: 2, value: event 2), was sent to (partition: 0, offset: 11
+Record with (key: 3, value: event 3), was sent to (partition: 1, offset: 10
+Record with (key: 4, value: event 4), was sent to (partition: 0, offset: 12
+Record with (key: 5, value: event 5), was sent to (partition: 1, offset: 11
+Record with (key: 6, value: event 6), was sent to (partition: 1, offset: 12
+Record with (key: 7, value: event 7), was sent to (partition: 2, offset: 1
+Record with (key: 8, value: event 8), was sent to (partition: 1, offset: 13
+Record with (key: 9, value: event 9), was sent to (partition: 2, offset: 2
+```
+
+NOTE: if we omit the key completely, then Kafka will produce messages to **partitions** in **round-robin** fashion.
+
+---
+
+## Chapter 04. Kafka Consumer
+
+- Create the Kafka Consumer class in IntelliJ
+
+```java
+package com.backstreetbrogrammer.consumer;
+
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
+
+public class KafkaConsumerDemo {
+
+    private static final String TOPIC = "events";
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092,localhost:9093,localhost:9094";
+
+    public static void main(final String[] args) {
+        String consumerGroup = "defaultConsumerGroup";
+        if (args.length == 1) {
+            consumerGroup = args[0];
+        }
+
+        System.out.printf("Consumer is part of consumer group %s%n", consumerGroup);
+
+        final Consumer<Long, String> kafkaConsumer = createKafkaConsumer(BOOTSTRAP_SERVERS, consumerGroup);
+        consumeMessages(TOPIC, kafkaConsumer);
+    }
+
+    public static void consumeMessages(final String topic, final Consumer<Long, String> kafkaConsumer) {
+        kafkaConsumer.subscribe(Collections.singletonList(topic));
+
+        while (true) {
+            final ConsumerRecords<Long, String> consumerRecords = kafkaConsumer.poll(Duration.ofSeconds(1));
+            if (consumerRecords.isEmpty()) {
+                // do something else
+            }
+
+            for (final ConsumerRecord<Long, String> record : consumerRecords) {
+                System.out.printf("Received record (key: %d, value: %s, partition: %d, offset: %d%n",
+                                  record.key(), record.value(), record.partition(), record.offset());
+            }
+
+            // do something with the records
+
+            kafkaConsumer.commitAsync();
+        }
+    }
+
+    public static Consumer<Long, String> createKafkaConsumer(final String bootstrapServers, final String consumerGroup) {
+        final Properties properties = new Properties();
+
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
+        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
+        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+
+        return new KafkaConsumer<>(properties);
+    }
+}
+```
+
+- Build the project using: `mvn clean install`
+
+- Open the WSL Ubuntu app and run the program:
+
+```
+cd /mnt/c/Users/~/ApacheKafka
+
+java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -Xmx1024m com.backstreetbrogrammer.consumer.KafkaConsumerDemo
+```
+
+- Sample output:
+
+```
+[main] INFO org.apache.kafka.clients.consumer.internals.SubscriptionState - [Consumer clientId=consumer-defaultConsumerGroup-1, groupId=defaultConsumerGroup] Resetting offset for partition events-1 to position FetchPosition{offset=14, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[DESKTOP-6V79CIU.:9094 (id: 2 rack: null)], epoch=0}}.
+Received record (key: 0, value: event 0, partition: 2, offset: 3
+Received record (key: 1, value: event 1, partition: 0, offset: 13
+Received record (key: 2, value: event 2, partition: 0, offset: 14
+Received record (key: 3, value: event 3, partition: 1, offset: 14
+Received record (key: 4, value: event 4, partition: 0, offset: 15
+Received record (key: 5, value: event 5, partition: 1, offset: 15
+Received record (key: 6, value: event 6, partition: 1, offset: 16
+Received record (key: 7, value: event 7, partition: 2, offset: 4
+Received record (key: 8, value: event 8, partition: 1, offset: 17
+Received record (key: 9, value: event 9, partition: 2, offset: 5
+```
 
