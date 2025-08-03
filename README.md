@@ -23,6 +23,7 @@ Tools used:
     - [Demo run using command line](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#demo-run-using-command-line)
 3. [Kafka Producer](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-03-kafka-producer)
 4. [Kafka Consumer](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-04-kafka-consumer)
+5. [Kafka Theory](https://github.com/backstreetbrogrammer/46_ApacheKafka?tab=readme-ov-file#chapter-05-kafka-theory)
 
 ---
 
@@ -724,3 +725,74 @@ java -cp ./target/ApacheKafka-1.0-SNAPSHOT-jar-with-dependencies.jar -Xms128m -X
 
 We will observe that each of the published messages is broadcast to all the three consumers.
 
+---
+
+## Chapter 05. Kafka Theory
+
+### Kafka Topics, Partitions and Offsets
+
+![01_KafkaTopics](01_KafkaTopics.PNG)
+
+- A **topic** is a category or feed name to which records are published.
+- A topic is a **logical** abstraction that is used to group records.
+
+![02_PartitionsAndOffsets](02_PartitionsAndOffsets.PNG)
+
+- A topic is split into **partitions**.
+- A partition is an **ordered** sequence of records that is continually appended to.
+- Each record in a partition is assigned a sequential **ID** called an **offset**.
+
+![03_TopicsPartitionsOffsetsNotes](03_TopicsPartitionsOffsetsNotes.PNG)
+
+- The offset is a unique identifier for each record within a partition.
+- The offset is used to identify the position of a record in the partition.
+- A topic can have multiple partitions, which allows for parallel processing of records.
+- Each partition can be hosted on a different broker in the Kafka cluster.
+- The number of partitions in a topic can be configured based on the expected load and performance requirements.
+- The number of partitions can be increased or decreased dynamically, but it is not possible to decrease the number of
+  partitions below the current number.
+- The number of partitions in a topic can affect the performance and scalability of the Kafka cluster.
+- The number of partitions can be increased to handle more load, but it can also increase the complexity of the
+  system.
+- The number of partitions can be decreased to reduce the complexity of the system, but it can also reduce the
+  performance and scalability of the Kafka cluster.
+
+### Kafka Producers and Message Keys
+
+![04_KafkaProducers](04_KafkaProducers.PNG)
+
+- A **producer** is an application that publishes records to one or more Kafka topics.
+- Producers can publish records to a specific partition within a topic by specifying the partition number.
+- If a producer does not specify a partition, Kafka will use a **partitioning strategy** to determine which
+  partition to publish the record to.
+- The partitioning strategy can be based on the record key, round-robin, or a custom partitioning logic.
+
+![05_MessageKeys](05_MessageKeys.PNG)
+
+- The **record key** is an optional field that can be used to determine the partition for a record.
+- If a record has a key, Kafka will use the key to determine the partition.
+- If a record does not have a key, Kafka will use a round-robin strategy to determine the partition.
+
+![06_KafkaMessage](06_KafkaMessage.PNG)
+
+- Using a key allows for **message ordering** within a partition, as all records with the same key will be sent to the
+  same partition.
+- This is useful for scenarios where the order of records is important, such as in a chat application or a
+  financial transaction system.
+
+**Kafka Message Serializer**
+
+![07_KafkaMessageSerializer](07_KafkaMessageSerializer.PNG)
+
+- A **serializer** is used to convert the record key and value into a byte array before sending it to Kafka.
+- Kafka provides built-in serializers for common data types, such as strings and integers.
+- Custom serializers can be implemented to handle complex data types or specific serialization formats.
+
+![08_KafkaMessageHashing](08_KafkaMessageHashing.PNG)
+
+- The serializer is specified in the producer configuration when creating a Kafka producer.
+- The serializer is responsible for converting the record key and value into a byte array that can be sent to Kafka.
+- The serializer is also responsible for converting the byte array back into the original data type when consuming
+  records from Kafka.
+
+### Kafka Consumers and Deserialization
