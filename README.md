@@ -796,3 +796,115 @@ We will observe that each of the published messages is broadcast to all the thre
   records from Kafka.
 
 ### Kafka Consumers and Deserialization
+
+![09_KafkaConsumer](09_KafkaConsumer.PNG)
+
+- A **consumer** is an application that reads records from one or more Kafka topics.
+- Consumers can read records from a specific partition within a topic by specifying the partition number.
+- If a consumer does not specify a partition, Kafka will use a **partition assignment strategy** to determine which
+  partitions to read from.
+- The partition assignment strategy can be based on the consumer group, round-robin, or a custom assignment logic.
+- Consumers can be part of a **consumer group**, which allows for parallel processing of records across multiple
+  consumers.
+
+![10_ConsumerDeserializer](10_ConsumerDeserializer.PNG)
+
+- A **deserializer** is used to convert the byte array received from Kafka back into the original record key and value.
+
+### Consumer Groups and Consumer Offsets
+
+![11_ConsumerGroups](11_ConsumerGroups.PNG)
+
+- A **consumer group** is a group of consumers that work together to read records from one or more Kafka topics.
+- Each consumer in a consumer group is assigned a subset of partitions to read from, allowing for parallel
+  processing of records.
+- The consumer group ensures that each record is processed by only one consumer in the group, providing
+  load balancing and fault tolerance.
+- If a consumer in a consumer group fails, Kafka will automatically reassign its partitions to other consumers in the
+  group, ensuring that no records are lost.
+- Consumers in a consumer group can be added or removed dynamically, allowing for scaling of the consumer group
+  based on the load.
+
+![12_ManyConsumerGroups](12_ManyConsumerGroups.PNG)
+
+![13_ManyConsumerGroupsOnOneTopic](13_ManyConsumerGroupsOnOneTopic.PNG)
+
+- Multiple consumer groups can read from the same topic independently, allowing for different applications to consume
+  the same data without interfering with each other.
+- This is useful for scenarios where different applications need to process the same data in different ways, such as
+  analytics, monitoring, and real-time processing.
+- Each consumer group maintains its own offset for each partition it reads from, allowing it to track its progress
+  independently.
+
+![14_ConsumerOffsets](14_ConsumerOffsets.PNG)
+
+- The **consumer offset** is the position of the last record that has been successfully processed by a consumer in a
+  consumer group.
+- The consumer offset is stored in Kafka, allowing consumers to resume reading from the last processed record after a
+  failure or restart.
+- The consumer offset can be committed manually or automatically, depending on the consumer configuration.
+
+![15_ConsumerDeliverySemantics](15_ConsumerDeliverySemantics.PNG)
+
+- Kafka provides three delivery semantics for consumers:
+    - **At-most-once**: Records may be lost, but they will not be processed more than once.
+    - **At-least-once**: Records will be processed at least once, but they may be processed multiple times in case of
+      failures.
+    - **Exactly-once**: Records will be processed exactly once, ensuring no duplicates or data loss.
+- The delivery semantics can be configured in the consumer properties, allowing applications to choose the level of
+  reliability they need based on their use case.
+
+### Kafka Brokers and Topics
+
+![16_KafkaBrokers](16_KafkaBrokers.PNG)
+
+- A **Kafka broker** is a server that stores and serves Kafka topics.
+- A Kafka cluster consists of one or more brokers that work together to provide high availability and fault tolerance.
+- Each broker is responsible for storing a subset of partitions for each topic.
+- Brokers communicate with each other to ensure that data is replicated and available across the cluster.
+
+![17_BrokersAndTopics](17_BrokersAndTopics.PNG)
+
+- A **topic** is a logical abstraction that represents a stream of records.
+- A topic can have multiple partitions, which allows for parallel processing of records.
+
+![18_KafkaBrokerDiscovery](18_KafkaBrokerDiscovery.PNG)
+
+- When a producer or consumer connects to a Kafka cluster, it needs to discover the available brokers.
+- This is done through a **bootstrap server** configuration, which provides the initial broker to connect to.
+- Once connected, the producer or consumer can retrieve metadata about the cluster, including the list of available
+  brokers and their partitions.
+
+### Topic Replication
+
+![19_TopicReplicationFactor](19_TopicReplicationFactor.PNG)
+
+- Each topic can be configured with a **replication factor**, which determines how many copies of each partition are
+  stored across the brokers in the cluster.
+- The replication factor provides fault tolerance and ensures that data is not lost in case of broker failures.
+
+![20_TopicReplicationFactorExample](20_TopicReplicationFactorExample.PNG)
+
+![21_PartitionLeader](21_PartitionLeader.PNG)
+
+- For each partition, one broker is elected as the **leader**, while the others are **followers**.
+- The leader is responsible for handling all read and write requests for that partition, while the followers
+  replicate the data from the leader to ensure consistency.
+
+![22_DefaultLeaderBehavior](22_DefaultLeaderBehavior.PNG)
+
+![23_ConsumerReplicaFetching](23_ConsumerReplicaFetching.PNG)
+
+### Producer Acknowledgments and Topic Durability
+
+![24_ProducerAcknowledgments](24_ProducerAcknowledgments.PNG)
+
+- When a producer sends a record to a topic, it can specify the level of acknowledgment it requires from the broker.
+- The acknowledgment can be set to:
+    - **acks=0**: The producer does not wait for any acknowledgment from the broker (fire-and-forget).
+    - **acks=1**: The producer waits for the leader broker to acknowledge the record.
+    - **acks=all**: The producer waits for all in-sync replicas to acknowledge the record, ensuring durability.
+
+![25_KafkaTopicDurability](25_KafkaTopicDurability.PNG)
+
+
